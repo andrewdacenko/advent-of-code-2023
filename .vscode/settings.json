@@ -1,6 +1,3 @@
 {
-  "rust-analyzer.linkedProjects": [
-    "./day-01-trebuchet/Cargo.toml",
-    "./day-01-trebuchet/calibrate/Cargo.toml"
-  ]
+  "rust-analyzer.linkedProjects": ["./day-01-trebuchet/Cargo.toml"]
 }
