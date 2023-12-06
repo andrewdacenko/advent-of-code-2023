@@ -20,6 +20,12 @@ pub fn num_ways_to_win(records: &str) -> usize {
         .fold(1, |acc, res| acc * res);
 }
 
+pub fn num_ways_to_win_single_race(race_card: &str) -> usize {
+    let race_data = &parse_race_card(race_card);
+
+    return num_ways_to_win_race(race_data);
+}
+
 fn num_ways_to_win_race(race_data: &RaceData) -> usize {
     let mut counter = 0;
     for i in 0..race_data.time {
@@ -45,6 +51,21 @@ fn parse_race(records: &str) -> Vec<RaceData> {
     }
 
     return res;
+}
+
+fn parse_race_card(race_card: &str) -> RaceData {
+    let (time_str, distance_str) = race_card.split_once("\n").unwrap();
+
+    let time: usize = NUM_RE
+        .find(time_str.to_string().replace(" ", "").as_str())
+        .map(match_tom_num)
+        .unwrap();
+    let distance: usize = NUM_RE
+        .find(distance_str.to_string().replace(" ", "").as_str())
+        .map(match_tom_num)
+        .unwrap();
+
+    return RaceData { time, distance };
 }
 
 fn match_tom_num(x: Match) -> usize {
