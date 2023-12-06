@@ -3,6 +3,7 @@
     "./day-01-trebuchet/Cargo.toml",
     "./day-02-cube-conundrum/Cargo.toml",
     "./day-03-gear-ratios/Cargo.toml",
-    "./day-04-scratchcards/Cargo.toml"
+    "./day-04-scratchcards/Cargo.toml",
+    "./day-05-fertilizer/Cargo.toml"
   ]
 }
