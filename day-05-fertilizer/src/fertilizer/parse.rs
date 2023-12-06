@@ -53,11 +53,6 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parse_mapping_correctly() {
-        assert_eq!(format!("{:?}", parse_mapping("random map:\n10 1 2")), "");
-    }
-
-    #[test]
     fn parsed_map_correctly() {
         let plant_map = parse_map(
             "seeds: 79 14 55 13
