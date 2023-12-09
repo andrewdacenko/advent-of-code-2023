@@ -6,6 +6,7 @@
     "./day-04-scratchcards/Cargo.toml",
     "./day-05-fertilizer/Cargo.toml",
     "./day-06-boat-racing/Cargo.toml",
-    "./day-07-camel-cards/Cargo.toml"
+    "./day-07-camel-cards/Cargo.toml",
+    "./day-08-wasteland/Cargo.toml"
   ]
 }
