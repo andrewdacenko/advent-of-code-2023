@@ -1,6 +1,6 @@
 use itertools::Itertools;
 
-pub fn shortest_paths(space: &str) -> Vec<usize> {
+pub fn shortest_paths(space: &str, expansion: usize) -> Vec<usize> {
     let galaxies: Vec<(usize, usize)> = space
         .split("\n")
         .enumerate()
@@ -28,7 +28,11 @@ pub fn shortest_paths(space: &str) -> Vec<usize> {
         .map(|(row, col)| {
             let expand_row = empty_rows.iter().filter(|x| x.lt(&row)).count();
             let expand_col = empty_cols.iter().filter(|x| x.lt(&col)).count();
-            return (row + expand_row, col + expand_col);
+
+            return (
+                row + expand_row * (expansion - 1),
+                col + expand_col * (expansion - 1),
+            );
         })
         .collect::<Vec<(usize, usize)>>();
 
