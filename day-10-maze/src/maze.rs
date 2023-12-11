@@ -214,8 +214,64 @@ pub fn longest_path(map: &str) -> usize {
         visited.insert(second_pos);
     }
 
-    println!("Visited {:?}", visited);
     return ((visited.len() / 2) as f64).ceil() as usize;
+}
+
+pub fn enclosed_tiles(map: &str) -> usize {
+    let maze = Maze::from(map);
+    let (mut first, mut second) = maze.clone().start();
+    let mut loop_path: HashSet<(usize, usize)> = HashSet::new();
+
+    loop {
+        first = first.clone().next(&maze).unwrap();
+        second = second.clone().next(&maze).unwrap();
+        let first_pos = (first.row, first.column);
+        let second_pos = (second.row, second.column);
+
+        if loop_path.contains(&first_pos) || loop_path.contains(&second_pos) {
+            break;
+        }
+
+        loop_path.insert(first_pos);
+        loop_path.insert(second_pos);
+    }
+
+    let mut tiles: usize = 0;
+    for (row, line) in maze.rows.iter().enumerate() {
+        let mut row_tiles: Vec<(usize, usize)> = vec![];
+        for column in 0..line.len() {
+            if is_enclosed_in_line(row, column, line, &loop_path) {
+                row_tiles.push((row, column))
+            }
+        }
+        tiles += row_tiles.len();
+    }
+
+    return tiles;
+}
+
+fn is_enclosed_in_line(
+    row: usize,
+    column: usize,
+    line: &str,
+    loop_path: &HashSet<(usize, usize)>,
+) -> bool {
+    if loop_path.contains(&(row, column)) {
+        return false;
+    }
+
+    let mut north: usize = 0;
+    for i in 0..column {
+        if !loop_path.contains(&(row, i)) {
+            continue;
+        }
+        let c = line.chars().nth(i).unwrap();
+        if "|JSL".contains(c) {
+            north += 1;
+        }
+    }
+
+    return north % 2 == 1;
 }
 
 #[cfg(test)]
@@ -251,6 +307,19 @@ mod tests {
                 Position::from(0, 1, Direction::South),
                 Position::from(0, 1, Direction::East),
             )
+        );
+    }
+
+    #[test]
+    fn it_detects_enclosed() {
+        assert_eq!(
+            is_enclosed_in_line(0, 1, ".|...|.", &HashSet::from([(0, 1), (0, 5)])),
+            false
+        );
+
+        assert_eq!(
+            is_enclosed_in_line(0, 3, ".|...|.", &HashSet::from([(0, 1), (0, 5)])),
+            true
         );
     }
 }
