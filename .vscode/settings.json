@@ -10,6 +10,7 @@
     "./day-08-wasteland/Cargo.toml",
     "./day-09-oasis/Cargo.toml",
     "./day-10-maze/Cargo.toml",
-    "./day-11-cosmic-expansion/Cargo.toml"
+    "./day-11-cosmic-expansion/Cargo.toml",
+    "./day-12-hot-springs/Cargo.toml"
   ]
 }
