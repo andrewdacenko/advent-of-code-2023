@@ -14,6 +14,7 @@
     "./day-12-hot-springs/Cargo.toml",
     "./day-13-mirrors/Cargo.toml",
     "./day-14-reflector/Cargo.toml",
-    "./day-15-hash/Cargo.toml"
+    "./day-15-hash/Cargo.toml",
+    "./day-16-floor-is-lava/Cargo.toml"
   ]
 }
