@@ -45,14 +45,86 @@ fn parse_tiles(map: &str) -> Grid {
 }
 
 pub fn count_energized_tiles(map: &str) -> usize {
+    count_energized_tiles_for_beam(
+        &Beam {
+            direction: Direction::Right,
+            col: 0,
+            row: 0,
+        },
+        &parse_tiles(map),
+    )
+}
+
+pub fn count_most_energized_tiles(map: &str) -> usize {
     let tiles = parse_tiles(map);
-    let beam = Beam {
-        direction: Direction::Right,
-        row: 0,
-        col: 0,
-    };
-    let mut beams: Vec<Beam> = vec![beam];
-    let mut visited_tiles = HashSet::from([beam]);
+    return (0..tiles.len())
+        .map(|row| {
+            if row == 0 {
+                return (0..tiles[row].len())
+                    .map(|col| Beam {
+                        direction: Direction::Bottom,
+                        row,
+                        col,
+                    })
+                    .chain([
+                        Beam {
+                            direction: Direction::Right,
+                            row: 0,
+                            col: 0,
+                        },
+                        Beam {
+                            direction: Direction::Left,
+                            row: 0,
+                            col: tiles[row].len() - 1,
+                        },
+                    ])
+                    .collect::<Vec<Beam>>();
+            }
+
+            if row == tiles.len() - 1 {
+                return (0..tiles[row].len())
+                    .map(|col| Beam {
+                        direction: Direction::Top,
+                        row,
+                        col,
+                    })
+                    .chain([
+                        Beam {
+                            direction: Direction::Right,
+                            row: 0,
+                            col: 0,
+                        },
+                        Beam {
+                            direction: Direction::Left,
+                            row: 0,
+                            col: tiles[row].len() - 1,
+                        },
+                    ])
+                    .collect::<Vec<Beam>>();
+            }
+
+            return vec![
+                Beam {
+                    direction: Direction::Right,
+                    row,
+                    col: 0,
+                },
+                Beam {
+                    direction: Direction::Left,
+                    row,
+                    col: tiles[row].len() - 1,
+                },
+            ];
+        })
+        .flatten()
+        .map(|beam| count_energized_tiles_for_beam(&beam, &tiles))
+        .max()
+        .unwrap();
+}
+
+fn count_energized_tiles_for_beam(beam: &Beam, tiles: &Grid) -> usize {
+    let mut beams: Vec<Beam> = vec![beam.clone()];
+    let mut visited_tiles = HashSet::from([beam.clone()]);
 
     while beams.len() != 0 {
         beams = beams
@@ -60,7 +132,7 @@ pub fn count_energized_tiles(map: &str) -> usize {
             .map(|beam| move_beam(beam, &tiles))
             .flatten()
             .flatten()
-            .filter(|beam| !visited_tiles.contains(beam))
+            .filter(|item| !visited_tiles.contains(item))
             .collect();
 
         visited_tiles.extend(beams.iter());
