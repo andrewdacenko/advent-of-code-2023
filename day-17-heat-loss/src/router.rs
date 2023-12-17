@@ -1,5 +1,10 @@
 use pathfinding::prelude::dijkstra;
 
+enum CrucibleType {
+    Small,
+    Ultra,
+}
+
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 enum Direction {
     Left,
@@ -30,11 +35,19 @@ impl Block {
         (grid[self.row][self.col] - 48) as usize
     }
 
-    fn successors(&self, grid: &Grid) -> Vec<(Block, usize)> {
+    fn successors(&self, grid: &Grid, crucible: &CrucibleType) -> Vec<(Block, usize)> {
         if self.row == grid.len() - 1 && self.col == grid[0].len() - 1 {
             return vec![];
         }
 
+        let max_steps = match crucible {
+            CrucibleType::Small => 3,
+            CrucibleType::Ultra => 10,
+        };
+        let min_steps = match crucible {
+            CrucibleType::Small => 1,
+            CrucibleType::Ultra => 4,
+        };
         let max_row = grid.len();
         let max_col = grid[0].len();
         let transform = |&direction| match direction {
@@ -52,7 +65,11 @@ impl Block {
         let successors: Vec<(Block, usize)> = next_directions
             .iter()
             .map(|direction| {
-                if self.direction.eq(direction) && self.step == 3 {
+                if self.direction.eq(direction) && self.step == max_steps {
+                    return None;
+                }
+
+                if !self.direction.eq(direction) && self.step < min_steps {
                     return None;
                 }
 
@@ -93,18 +110,26 @@ impl Block {
 type Grid<'a> = Vec<&'a [u8]>;
 
 pub fn min_heat_loss(map: &str) -> usize {
+    min_heat_loss_for_crucible(map, &CrucibleType::Small)
+}
+
+pub fn min_heat_loss_ultra(map: &str) -> usize {
+    min_heat_loss_for_crucible(map, &CrucibleType::Ultra)
+}
+
+fn min_heat_loss_for_crucible(map: &str, crucible: &CrucibleType) -> usize {
     let grid: Grid = map.lines().map(|line| line.as_bytes()).collect();
     let goal = |block: &Block| block.row == grid.len() - 1 && block.col == grid[0].len() - 1;
 
     let right = dijkstra(
         &Block::new(0, 1, Direction::Right, 1),
-        |block| block.successors(&grid),
+        |block| block.successors(&grid, crucible),
         goal,
     );
 
     let bottom = dijkstra(
         &Block::new(1, 0, Direction::Bottom, 1),
-        |block| block.successors(&grid),
+        |block| block.successors(&grid, crucible),
         goal,
     );
 
