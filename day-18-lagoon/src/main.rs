@@ -12,4 +12,6 @@ fn main() {
     let contents = fs::read_to_string(file_path).expect("Should have been able to read the file");
     let sum: usize = digger::volume(&contents);
     println!("Sum:\n{sum}");
+    let sum_hex: usize = digger::volume_hex(&contents);
+    println!("Sum hex:\n{sum_hex}");
 }
