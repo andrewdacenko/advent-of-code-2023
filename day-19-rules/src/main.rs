@@ -12,4 +12,6 @@ fn main() {
     let contents = fs::read_to_string(file_path).expect("Should have been able to read the file");
     let sum: usize = processor::sum_parts(&contents);
     println!("Sum:\n{sum}");
+    let sum_ranges = processor::sum_ranges(&contents);
+    println!("Sum ranges:\n{sum_ranges}");
 }
