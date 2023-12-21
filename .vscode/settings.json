@@ -19,6 +19,7 @@
     "./day-17-heat-loss/Cargo.toml",
     "./day-18-lagoon/Cargo.toml",
     "./day-19-rules/Cargo.toml",
-    "./day-20-pulse-propagation/Cargo.toml"
+    "./day-20-pulse-propagation/Cargo.toml",
+    "./day-21-walking/Cargo.toml"
   ]
 }
