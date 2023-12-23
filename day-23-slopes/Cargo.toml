@@ -1,0 +1,4 @@
+[package]
+name = "day-23-slopes"
+version = "0.1.0"
+edition = "2021"
