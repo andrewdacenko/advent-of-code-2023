@@ -1,0 +1,11 @@
+[package]
+name = "day-24-hail"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+eqsolver = "0.1.2"
+geo = "0.4.13"
+itertools = "0.12.0"
+line_intersection = "0.4.0"
+nalgebra = "0.32.3"
