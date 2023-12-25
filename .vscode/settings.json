@@ -23,6 +23,7 @@
     "./day-21-walking/Cargo.toml",
     "./day-22-tetris/Cargo.toml",
     "./day-23-slopes/Cargo.toml",
-    "./day-24-hail/Cargo.toml"
+    "./day-24-hail/Cargo.toml",
+    "./day-25-wires/Cargo.toml"
   ]
 }
