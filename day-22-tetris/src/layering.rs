@@ -1,7 +1,7 @@
-use std::{collections::HashMap, vec};
-
-type BrickOnLevel = HashMap<Brick, usize>;
-type BricksToLevel = HashMap<usize, Vec<Brick>>;
+use std::{
+    collections::{HashMap, HashSet},
+    vec,
+};
 
 #[derive(Clone, Copy, Debug, Hash, Eq, PartialEq)]
 struct Point(usize, usize, usize);
@@ -15,49 +15,96 @@ impl Point {
     }
 }
 
-#[derive(Clone, Copy, Debug, Hash, Eq, PartialEq)]
-struct Brick(Point, Point);
+#[derive(Clone, Debug, Hash, Eq, PartialEq)]
+struct Brick {
+    name: String,
+    level: usize,
+    supports: Vec<String>,
+    supported_by: Vec<String>,
+}
 
 impl Brick {
-    fn is_supported_by(&self, brick: &Brick) -> bool {
-        return self.0 .0 <= brick.1 .0
-            && brick.0 .0 <= self.1 .0
-            && self.0 .1 <= brick.1 .1
-            && brick.0 .1 <= self.1 .1;
+    fn can_desintegrate(&self, bricks: &HashMap<String, Brick>) -> bool {
+        self.supports.iter().all(|brick| {
+            bricks
+                .get(brick)
+                .and_then(|x| Some(x.supported_by.len() > 1))
+                .unwrap_or(false)
+        })
     }
 
-    fn can_desintegrate(
-        &self,
-        settled_on_level: &BrickOnLevel,
-        supports_level: &BricksToLevel,
-    ) -> bool {
-        let brick_level = settled_on_level.get(self).expect("Must have settled level");
-        let support_level = brick_level + self.1 .2 - self.0 .2 + 1;
+    fn drop_count(&self, bricks: &HashMap<String, Brick>) -> usize {
+        if self.can_desintegrate(bricks) {
+            return 0;
+        }
 
-        settled_on_level
-            .iter()
-            .filter(|(_brick, level)| support_level.eq(&level))
-            .filter(|(brick, _level)| brick.is_supported_by(self))
-            .all(|(brick, level)| {
-                let Some(bricks) = supports_level.get(level) else {return false};
-                bricks.iter().filter(|b| brick.is_supported_by(b)).count() > 1
-            })
+        let mut removed = vec![];
+        let mut dropped = 0;
+        let mut stack = vec![self];
+        while let Some(brick) = stack.pop() {
+            removed.push(&brick.name);
+            dropped += 1;
+            let should_fall = brick
+                .supports
+                .iter()
+                .map(|x| bricks.get(x))
+                .flatten()
+                .filter(|x| x.supported_by.iter().all(|s| removed.contains(&s)));
+            stack.extend(should_fall.into_iter());
+        }
+        return dropped - 1;
     }
 }
 
 pub fn count_redundant(input: &str) -> usize {
+    let bricks = parse(input);
+    let cache: &HashMap<String, Brick> = &bricks
+        .iter()
+        .map(|x| (x.name.to_owned(), x.to_owned()))
+        .collect();
+
+    let mut count = 0;
+    for brick in bricks.iter() {
+        if brick.can_desintegrate(cache) {
+            count += 1;
+        }
+    }
+
+    return count;
+}
+
+pub fn count_chain(input: &str) -> usize {
+    let bricks = parse(input);
+    let cache: &HashMap<String, Brick> = &bricks
+        .iter()
+        .map(|x| (x.name.to_owned(), x.to_owned()))
+        .collect();
+
+    let mut removeable: HashSet<Brick> = HashSet::new();
+    for brick in bricks.iter() {
+        if brick.can_desintegrate(cache) {
+            removeable.insert(brick.clone());
+        }
+    }
+
+    bricks
+        .iter()
+        .fold(0, |acc, brick| acc + brick.drop_count(&cache))
+}
+
+fn parse(input: &str) -> Vec<Brick> {
     let mut bricks = input
         .lines()
         .map(|l| {
             let (start, end) = l.split_once("~").expect("Line should have ~");
-            return Brick(Point::new(start), Point::new(end));
+            (Point::new(start), Point::new(end), l)
         })
-        .collect::<Vec<Brick>>();
+        .collect::<Vec<(Point, Point, &str)>>();
     bricks.sort_by(|a, b| a.0 .2.cmp(&b.0 .2));
 
     let mut heights = [[0; 10]; 10];
-    let mut brick_on_level: HashMap<Brick, usize> = HashMap::new();
-    let mut bricks_to_level: HashMap<usize, Vec<Brick>> = HashMap::new();
+    let mut brick_on_level: HashMap<(Point, Point, &str), usize> = HashMap::new();
+    let mut bricks_to_level: HashMap<usize, Vec<(Point, Point, &str)>> = HashMap::new();
     for brick in bricks.iter() {
         // drop a brick down
         let mut min_level = 1;
@@ -74,7 +121,7 @@ pub fn count_redundant(input: &str) -> usize {
             }
         }
 
-        brick_on_level.insert(brick.clone(), min_level);
+        brick_on_level.insert(brick.to_owned(), min_level);
 
         if let Some(res) = bricks_to_level.get_mut(&fill_level) {
             res.push(brick.to_owned())
@@ -83,12 +130,41 @@ pub fn count_redundant(input: &str) -> usize {
         }
     }
 
-    let mut count = 0;
-    for brick in bricks.iter() {
-        if brick.can_desintegrate(&brick_on_level, &bricks_to_level) {
-            count += 1;
-        }
-    }
+    let is_supported_by = |main: &(Point, Point, &str), other: &(Point, Point, &str)| {
+        main.0 .0 <= other.1 .0
+            && other.0 .0 <= main.1 .0
+            && main.0 .1 <= other.1 .1
+            && other.0 .1 <= main.1 .1
+    };
 
-    return count;
+    bricks
+        .iter()
+        .map(|position| {
+            let (start, end, name) = position;
+            let brick_level = brick_on_level.get(position).unwrap();
+            let mut brick = Brick {
+                name: name.to_string(),
+                level: brick_level.to_owned(),
+                supports: vec![],
+                supported_by: vec![],
+            };
+            let support_level = brick_level + end.2 - start.2 + 1;
+
+            brick.supports = brick_on_level
+                .iter()
+                .filter(|(_brick, level)| support_level.eq(&level))
+                .filter(|(brick, _level)| is_supported_by(brick, position))
+                .map(|((_start, _end, name), _level)| name.to_string())
+                .collect();
+
+            brick.supported_by = brick_on_level
+                .iter()
+                .filter(|(brick, level)| brick_level.eq(&(*level + brick.1 .2 - brick.0 .2 + 1)))
+                .filter(|(brick, _level)| is_supported_by(position, brick))
+                .map(|((_start, _end, name), _level)| name.to_string())
+                .collect();
+
+            brick
+        })
+        .collect()
 }

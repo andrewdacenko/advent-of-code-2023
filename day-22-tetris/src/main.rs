@@ -12,4 +12,6 @@ fn main() {
     let contents = fs::read_to_string(file_path).expect("Should have been able to read the file");
     let sum = layering::count_redundant(&contents);
     println!("Sum:\n{sum}");
+    let sum_chain = layering::count_chain(&contents);
+    println!("Sum chain:\n{sum_chain}");
 }
