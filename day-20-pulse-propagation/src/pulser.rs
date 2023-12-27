@@ -122,7 +122,6 @@ impl Module {
     }
 }
 
-const RX: &str = "rx";
 const BUTTON: &str = "button";
 const BROADCASTER: &str = "broadcaster";
 
